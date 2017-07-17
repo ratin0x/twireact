@@ -1,0 +1,21 @@
+{
+  "server": {
+    "app": {
+      "slogan": "Twireact"
+    }
+  },
+  "connections": [
+    {
+      "port": 8042,
+      "labels": ["api"]
+    }
+  ],
+  "plugins": [
+    {"./tw": [
+      {
+        "select": ["api"],
+        "options": {}
+      }
+    ]}
+  ]
+}
