@@ -92,11 +92,6 @@ var App = function (_Component) {
             }).then(function (res) {
                 res.json().then(function (res) {
                     console.log(res);
-                    // const gotUser = res.map( function ( user ) {
-                    //     console.log(user);
-                    //     return user;
-                    // });
-                    // this.setState({selectedUser: res});
                 });
             }, function (error) {
                 console.log(error);

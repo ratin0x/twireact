@@ -69,11 +69,6 @@ class App extends Component {
             res.json().then(
                 res => {
                     console.log(res);
-                    // const gotUser = res.map( function ( user ) {
-                    //     console.log(user);
-                    //     return user;
-                    // });
-                    // this.setState({selectedUser: res});
                 }
             );
         }, function (error) {
