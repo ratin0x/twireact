@@ -28,6 +28,18 @@ Glue.compose( manifest, options, function( err, server ) {
     //Wiring for static content
     server.register( require('inert'), function(err) {
         server.route({
+            path: '/dist/public/js/{param*}',
+            method: 'GET',
+            handler: {
+                directory: {
+                    path: 'public/js'
+                }
+            }
+        });
+    });
+
+    server.register( require('inert'), function(err) {
+        server.route({
             path: '/public/{param*}',
             method: 'GET',
             handler: {
