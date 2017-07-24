@@ -3,6 +3,15 @@
  */
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter, Route, Link } from 'react-router-dom'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import injectTapEventPlugin from 'react-tap-event-plugin';
+import RaisedButton from 'material-ui/RaisedButton';
+import Avatar from 'material-ui/Avatar';
+import {List, ListItem} from 'material-ui/List';
+import {GridList, GridTile} from 'material-ui/GridList';
+import FontIcon from 'material-ui/FontIcon';
+import * as Colors from 'material-ui/styles/colors';
 
 
 class App extends Component {
@@ -11,13 +20,17 @@ class App extends Component {
         this.state = {
             selectedUser: [],
             userFriends: [],
-            userCircle: [],
-            userName: ''
+            circleList: [],
+            userName: '',
+            rateExceeded: false
         }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.clickCircleButton = this.clickCircleButton.bind(this);
+        this.clickShowCircleButton = this.clickShowCircleButton.bind(this);
+
+        this.clickTile = this.clickTile.bind(this);
 
     }
 
@@ -44,11 +57,12 @@ class App extends Component {
                     //     console.log(user);
                     //     return user;
                     // });
-                    this.setState({selectedUser: res});
+                    this.setState({selectedUser: res, rateExceeded: false});
                 }
             );
         }, function (error) {
             console.log(error);
+            this.setState({rateExceeded: true});
         });
 
         // alert('Submitted : ' + this.props.userName );
@@ -73,18 +87,73 @@ class App extends Component {
             );
         }, function (error) {
             console.log(error);
+            this.setState({rateExceeded: true});
         });
 
     }
 
+    clickShowCircleButton() {
+        console.log('Show');
+
+        fetch('/tw/showCircle',
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify({name: this.state.userName})
+            }).then( res => {
+            res.json().then(
+                res => {
+                    console.log(res);
+                    this.setState({circleList: res.circle});
+                }
+            );
+        }, function (error) {
+            console.log(error);
+            this.setState({rateExceeded: true});
+        });
+
+    }
+
+    clickTile(event) {
+        event.preventDefault();
+        window.open( event.target.value);
+    }
+
     
     render() {
-        return(
-            <div className="app">
-                <h1>Appp</h1>
-                <TargetInput handleSubmit={this.handleSubmit} handleChange={this.handleChange} clickCircleButton={this.clickCircleButton} selectedUser={this.state.selectedUser} userName={this.state.userName}/>
-            </div>
-        );
+        if ( this.state.rateExceeded === false ) {
+            return (
+                <MuiThemeProvider>
+                    <BrowserRouter>
+                        <div className="app">
+                            <h1>Appp</h1>
+                            <TargetInput handleSubmit={this.handleSubmit} handleChange={this.handleChange}
+                                         clickCircleButton={this.clickCircleButton} clickShowCircleButton={this.clickShowCircleButton} selectedUser={this.state.selectedUser}
+                                         userName={this.state.userName}/>
+                            <CircleList circleList={this.state.circleList} clickTile={this.clickTile }/>
+                        </div>
+                    </BrowserRouter>
+                </MuiThemeProvider>
+            );
+        } else {
+            return (
+                <MuiThemeProvider>
+                    <BrowserRouter>
+                        <div className="app">
+                            <h1>Appp</h1>
+                            <span>Rate limit exceeded</span>
+                            <TargetInput handleSubmit={this.handleSubmit} handleChange={this.handleChange}
+                                         clickCircleButton={this.clickCircleButton} clickShowCircleButton={this.clickShowCircleButton} selectedUser={this.state.selectedUser}
+                                         userName={this.state.userName}/>
+                            <CircleList circleList={this.state.circleList} clickTile={this.clickTile }/>
+                        </div>
+                    </BrowserRouter>
+                </MuiThemeProvider>
+            );
+        }
     }
 }
 
@@ -106,7 +175,8 @@ class TargetInput extends Component {
                     <input type="text" placeholder="username" onChange={this.props.handleChange} />
                     <input type="submit" value="Submit" />
                 </form>
-                <button onClick={this.props.clickCircleButton} userName={this.props.userName}>Get Circle</button>
+                <RaisedButton onClick={this.props.clickCircleButton}>Build Circle</RaisedButton>
+                <RaisedButton onClick={this.props.clickShowCircleButton}>Show Circle</RaisedButton>
             </div>
         )
     }
@@ -128,7 +198,8 @@ class SelectedUserPanel extends Component {
         if ( this.props.selectedUser ) {
             return(
                 <div>
-                    <User key={this.props.selectedUser.id} screenName={this.props.selectedUser.screen_name} name={this.props.selectedUser.name} imgSrc={this.props.selectedUser.profile_image_url} />
+                    <Avatar src={this.props.selectedUser.profile_image_url} size={50} />
+                    <span>{this.props.selectedUser.screen_name}</span>&nbsp;<span>{this.props.selectedUser.name}</span>
                 </div>
             )
         } else {
@@ -157,6 +228,26 @@ class User extends Component {
         )
     }
 
+}
+
+class CircleList extends Component {
+    constructor(props) {
+        super(props);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({ circleList: nextProps.circleList });
+    }
+
+
+    render() {
+        return(
+            <div>
+                <GridList cols={10} cellHeight={150} children={ this.props.circleList.map(
+                    (user) => <GridTile subtitle={'@' + user.screen_name} title={user.name} actionIcon={<img src={user.profile_image_url}/>} actionPosition='left'  children={ <a href={user.url}><img src={user.profile_background_image_url} /></a>} /> )}/>
+            </div>
+        )
+    }
 }
 
 ReactDOM.render(

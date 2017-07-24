@@ -10,6 +10,38 @@ var _reactDom = require('react-dom');
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
+var _reactRouterDom = require('react-router-dom');
+
+var _MuiThemeProvider = require('material-ui/styles/MuiThemeProvider');
+
+var _MuiThemeProvider2 = _interopRequireDefault(_MuiThemeProvider);
+
+var _reactTapEventPlugin = require('react-tap-event-plugin');
+
+var _reactTapEventPlugin2 = _interopRequireDefault(_reactTapEventPlugin);
+
+var _RaisedButton = require('material-ui/RaisedButton');
+
+var _RaisedButton2 = _interopRequireDefault(_RaisedButton);
+
+var _Avatar = require('material-ui/Avatar');
+
+var _Avatar2 = _interopRequireDefault(_Avatar);
+
+var _List = require('material-ui/List');
+
+var _GridList = require('material-ui/GridList');
+
+var _FontIcon = require('material-ui/FontIcon');
+
+var _FontIcon2 = _interopRequireDefault(_FontIcon);
+
+var _colors = require('material-ui/styles/colors');
+
+var Colors = _interopRequireWildcard(_colors);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -32,13 +64,17 @@ var App = function (_Component) {
         _this.state = {
             selectedUser: [],
             userFriends: [],
-            userCircle: [],
-            userName: ''
+            circleList: [],
+            userName: '',
+            rateExceeded: false
         };
 
         _this.handleChange = _this.handleChange.bind(_this);
         _this.handleSubmit = _this.handleSubmit.bind(_this);
         _this.clickCircleButton = _this.clickCircleButton.bind(_this);
+        _this.clickShowCircleButton = _this.clickShowCircleButton.bind(_this);
+
+        _this.clickTile = _this.clickTile.bind(_this);
 
         return _this;
     }
@@ -69,10 +105,11 @@ var App = function (_Component) {
                     //     console.log(user);
                     //     return user;
                     // });
-                    _this2.setState({ selectedUser: res });
+                    _this2.setState({ selectedUser: res, rateExceeded: false });
                 });
             }, function (error) {
                 console.log(error);
+                this.setState({ rateExceeded: true });
             });
 
             // alert('Submitted : ' + this.props.userName );
@@ -95,21 +132,92 @@ var App = function (_Component) {
                 });
             }, function (error) {
                 console.log(error);
+                this.setState({ rateExceeded: true });
             });
+        }
+    }, {
+        key: 'clickShowCircleButton',
+        value: function clickShowCircleButton() {
+            var _this3 = this;
+
+            console.log('Show');
+
+            fetch('/tw/showCircle', {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: "POST",
+                body: JSON.stringify({ name: this.state.userName })
+            }).then(function (res) {
+                res.json().then(function (res) {
+                    console.log(res);
+                    _this3.setState({ circleList: res.circle });
+                });
+            }, function (error) {
+                console.log(error);
+                this.setState({ rateExceeded: true });
+            });
+        }
+    }, {
+        key: 'clickTile',
+        value: function clickTile(event) {
+            event.preventDefault();
+            window.open(event.target.value);
         }
     }, {
         key: 'render',
         value: function render() {
-            return _react2.default.createElement(
-                'div',
-                { className: 'app' },
-                _react2.default.createElement(
-                    'h1',
+            if (this.state.rateExceeded === false) {
+                return _react2.default.createElement(
+                    _MuiThemeProvider2.default,
                     null,
-                    'Appp'
-                ),
-                _react2.default.createElement(TargetInput, { handleSubmit: this.handleSubmit, handleChange: this.handleChange, clickCircleButton: this.clickCircleButton, selectedUser: this.state.selectedUser, userName: this.state.userName })
-            );
+                    _react2.default.createElement(
+                        _reactRouterDom.BrowserRouter,
+                        null,
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'app' },
+                            _react2.default.createElement(
+                                'h1',
+                                null,
+                                'Appp'
+                            ),
+                            _react2.default.createElement(TargetInput, { handleSubmit: this.handleSubmit, handleChange: this.handleChange,
+                                clickCircleButton: this.clickCircleButton, clickShowCircleButton: this.clickShowCircleButton, selectedUser: this.state.selectedUser,
+                                userName: this.state.userName }),
+                            _react2.default.createElement(CircleList, { circleList: this.state.circleList, clickTile: this.clickTile })
+                        )
+                    )
+                );
+            } else {
+                return _react2.default.createElement(
+                    _MuiThemeProvider2.default,
+                    null,
+                    _react2.default.createElement(
+                        _reactRouterDom.BrowserRouter,
+                        null,
+                        _react2.default.createElement(
+                            'div',
+                            { className: 'app' },
+                            _react2.default.createElement(
+                                'h1',
+                                null,
+                                'Appp'
+                            ),
+                            _react2.default.createElement(
+                                'span',
+                                null,
+                                'Rate limit exceeded'
+                            ),
+                            _react2.default.createElement(TargetInput, { handleSubmit: this.handleSubmit, handleChange: this.handleChange,
+                                clickCircleButton: this.clickCircleButton, clickShowCircleButton: this.clickShowCircleButton, selectedUser: this.state.selectedUser,
+                                userName: this.state.userName }),
+                            _react2.default.createElement(CircleList, { circleList: this.state.circleList, clickTile: this.clickTile })
+                        )
+                    )
+                );
+            }
         }
     }]);
 
@@ -145,9 +253,14 @@ var TargetInput = function (_Component2) {
                     _react2.default.createElement('input', { type: 'submit', value: 'Submit' })
                 ),
                 _react2.default.createElement(
-                    'button',
-                    { onClick: this.props.clickCircleButton, userName: this.props.userName },
-                    'Get Circle'
+                    _RaisedButton2.default,
+                    { onClick: this.props.clickCircleButton },
+                    'Build Circle'
+                ),
+                _react2.default.createElement(
+                    _RaisedButton2.default,
+                    { onClick: this.props.clickShowCircleButton },
+                    'Show Circle'
                 )
             );
         }
@@ -178,7 +291,18 @@ var SelectedUserPanel = function (_Component3) {
                 return _react2.default.createElement(
                     'div',
                     null,
-                    _react2.default.createElement(User, { key: this.props.selectedUser.id, screenName: this.props.selectedUser.screen_name, name: this.props.selectedUser.name, imgSrc: this.props.selectedUser.profile_image_url })
+                    _react2.default.createElement(_Avatar2.default, { src: this.props.selectedUser.profile_image_url, size: 50 }),
+                    _react2.default.createElement(
+                        'span',
+                        null,
+                        this.props.selectedUser.screen_name
+                    ),
+                    '\xA0',
+                    _react2.default.createElement(
+                        'span',
+                        null,
+                        this.props.selectedUser.name
+                    )
                 );
             } else {
                 return _react2.default.createElement(
@@ -235,6 +359,40 @@ var User = function (_Component4) {
     }]);
 
     return User;
+}(_react.Component);
+
+var CircleList = function (_Component5) {
+    _inherits(CircleList, _Component5);
+
+    function CircleList(props) {
+        _classCallCheck(this, CircleList);
+
+        return _possibleConstructorReturn(this, (CircleList.__proto__ || Object.getPrototypeOf(CircleList)).call(this, props));
+    }
+
+    _createClass(CircleList, [{
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            this.setState({ circleList: nextProps.circleList });
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            return _react2.default.createElement(
+                'div',
+                null,
+                _react2.default.createElement(_GridList.GridList, { cols: 10, cellHeight: 150, children: this.props.circleList.map(function (user) {
+                        return _react2.default.createElement(_GridList.GridTile, { subtitle: '@' + user.screen_name, title: user.name, actionIcon: _react2.default.createElement('img', { src: user.profile_image_url }), actionPosition: 'left', children: _react2.default.createElement(
+                                'a',
+                                { href: user.url },
+                                _react2.default.createElement('img', { src: user.profile_background_image_url })
+                            ) });
+                    }) })
+            );
+        }
+    }]);
+
+    return CircleList;
 }(_react.Component);
 
 _reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('root'));
